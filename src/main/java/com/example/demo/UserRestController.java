@@ -1,10 +1,8 @@
 package com.example.demo;
 
 import java.util.List;
-import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,17 +13,27 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@EntityScan
 @RestController
-@SpringBootApplication
-public class DemoApplication {
+@RequestMapping(UserRestController.PATH)
+public class UserRestController {
+    public static final String PATH = "/api/users";
 
-	@RequestMapping("/")
-	public String home() {
-		return "Hello World";
-	}
+    @Autowired
+    private UserRepository userRepository;
 
-	public static void main(String[] args) {
-		SpringApplication.run(DemoApplication.class, args);
-	}
+    @PostMapping("/user/")
+    public User createUser(@RequestBody User.CreateUserRequestDto requestDto) {
+        return userRepository.save(new User(requestDto));
+    }
 
+    @DeleteMapping("/user/{id}")
+    public void deleteUser(@PathVariable Long id) {
+        userRepository.deleteById(id);
+    }
+
+    @GetMapping("/")
+    public List<User> findAllUsers() {
+        return userRepository.findAll();
+    }
 }
