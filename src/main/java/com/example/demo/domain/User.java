@@ -22,7 +22,7 @@ import com.example.demo.dto.CreateUserRequestDto;
 @Table(name="users", schema="public")
 public class User {
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
 
     @Column(length=50, nullable=false)
@@ -39,21 +39,17 @@ public class User {
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private List<Schedule> schedules;
 
-    public User(Long id, String username, String password, UserType userType, List<Schedule> schedules) {
-        this.id = id;
+    public User(String username, String password, UserType userType) {
         this.username = username;
         this.password = password;
         this.userType = userType;
-        this.schedules = schedules;
-    }
-
-    public User(CreateUserRequestDto userRequestDto) {
-        this.username = userRequestDto.username();
-        this.password = userRequestDto.password();
-        this.userType = userRequestDto.userType();
     }
 
     public User() {
+    }
+
+    public static User from(CreateUserRequestDto userRequestDto) {
+        return new User(userRequestDto.username(), userRequestDto.password(), userRequestDto.userType());
     }
 
     public Long getId() {
@@ -113,6 +109,14 @@ public class User {
         return Objects.hash(id, username, password, userType);
     }
 
-
-
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", userType=" + userType +
+                ", schedules=" + schedules +
+                '}';
+    }
 }

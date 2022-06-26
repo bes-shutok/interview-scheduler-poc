@@ -3,8 +3,7 @@ package com.example.demo.domain;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -12,15 +11,15 @@ import javax.persistence.Table;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @SuppressWarnings("JpaDataSourceORMInspection")
 @Entity
 @Table(name="schedules", schema="public")
 public class Schedule {
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
 
     @Column
@@ -36,20 +35,17 @@ public class Schedule {
     private LocalTime lastHour;
 
     @Column(nullable=false)
-    @ElementCollection
-    @Enumerated(EnumType.STRING)
-    private List<DayOfWeek> weekDays;
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Set<DayOfWeek> weekDays;
 
-    public Schedule(Long id, LocalDate startDate, LocalDate lastDate, LocalTime startHour,
-                    LocalTime lastHour, List<DayOfWeek> weekDays) {
-        this.id = id;
+    public Schedule(LocalDate startDate, LocalDate lastDate, LocalTime startHour,
+                    LocalTime lastHour, Set<DayOfWeek> weekDays) {
         this.startDate = startDate;
         this.lastDate = lastDate;
         this.startHour = startHour;
         this.lastHour = lastHour;
         this.weekDays = weekDays;
     }
-
     public Schedule() {
     }
 
@@ -93,11 +89,11 @@ public class Schedule {
         this.lastHour = lastHour;
     }
 
-    public List<DayOfWeek> getWeekDays() {
+    public Set<DayOfWeek> getWeekDays() {
         return weekDays;
     }
 
-    public void setWeekDays(List<DayOfWeek> weekDays) {
+    public void setWeekDays(Set<DayOfWeek> weekDays) {
         this.weekDays = weekDays;
     }
 
@@ -110,7 +106,9 @@ public class Schedule {
             return false;
         }
         Schedule schedule = (Schedule) o;
-        return id.equals(schedule.id) && startDate.equals(schedule.startDate) && lastDate.equals(schedule.lastDate) && startHour.equals(schedule.startHour) && lastHour.equals(schedule.lastHour) && weekDays.equals(schedule.weekDays);
+        return id.equals(schedule.id) && startDate.equals(schedule.startDate) && lastDate.equals(schedule.lastDate) &&
+                startHour.equals(schedule.startHour) && lastHour.equals(schedule.lastHour) &&
+                weekDays.equals(schedule.weekDays);
     }
 
     @Override
@@ -118,5 +116,15 @@ public class Schedule {
         return Objects.hash(id, startDate, lastDate, startHour, lastHour, weekDays);
     }
 
-
+    @Override
+    public String toString() {
+        return "Schedule{" +
+                "id=" + id +
+                ", startDate=" + startDate +
+                ", lastDate=" + lastDate +
+                ", startHour=" + startHour +
+                ", lastHour=" + lastHour +
+                ", weekDays=" + weekDays +
+                '}';
+    }
 }
