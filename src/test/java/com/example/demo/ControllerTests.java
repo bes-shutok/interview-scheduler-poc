@@ -1,7 +1,6 @@
 package com.example.demo;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -35,7 +34,7 @@ public class ControllerTests {
         Schedule schedule =
                 new Schedule(
                         LocalDate.now(), LocalDate.now().plusDays(30),
-                        LocalTime.of(10, 0), LocalTime.of(15, 0),
+                        (short) 10, (short) 15,
                         DayOfWeek.WORK_DAYS
                 );
         user.setSchedules(List.of(schedule));

@@ -30,6 +30,12 @@ public class UserRestController {
 
     @PostMapping ("/{id}/schedules/")
     public User addSchedules(@PathVariable Long id, @RequestBody List<Schedule> schedules) {
+        schedules.forEach(
+                s -> Schedule.validate(
+                        s.getStartDate(), s.getLastDate(),
+                        s.getStartHour(), s.getLastHour()
+                )
+        );
         User user = userRepository.findById(id).orElseThrow();
         user.setSchedules(schedules);
         return userRepository.save(user);
