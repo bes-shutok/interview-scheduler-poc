@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,12 +17,16 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.domain.Schedule;
 import com.example.demo.domain.User;
 import com.example.demo.domain.UserType;
+import com.example.demo.repository.ScheduleRepository;
 import com.example.demo.repository.UserRepository;
 
 @RestController
 @RequestMapping(UserRestController.PATH)
 public class UserRestController {
     public static final String PATH = "/api/users";
+
+    @Autowired
+    private ScheduleRepository scheduleRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -57,7 +62,7 @@ public class UserRestController {
     public Map<Long, List<Schedule>> lookupInterviewSlots(User candidateCarl) {
 
         List<Schedule> candidateSchedules = userRepository
-                .findById(candidateCarl.getId())
+                .findByIdEquals(candidateCarl.getId())
                 .orElseThrow()
                 .getSchedules();
 
@@ -75,7 +80,9 @@ public class UserRestController {
                                             candidateSchedule ->
                                                     Schedule.intersection(candidateSchedule, interviewerSchedule)
                                     )
-                    ).toList();
+                    )
+                    .filter(Objects::nonNull)
+                    .toList();
             if (!intersections.isEmpty()) {
                 interviewSlots.put(user.getId(), intersections);
             }

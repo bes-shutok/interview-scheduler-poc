@@ -4,7 +4,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
+import java.util.TreeSet;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +30,9 @@ class RepositoryTests {
     @Autowired
     private ScheduleRepository scheduleRepository;
 
-    private static final Set<DayOfWeek> WORK_DAYS = EnumSet.of(MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY);
+    private static final TreeSet<DayOfWeek> WORK_DAYS = new TreeSet<>(
+            EnumSet.of(MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY)
+    );
 
     private User user;
 

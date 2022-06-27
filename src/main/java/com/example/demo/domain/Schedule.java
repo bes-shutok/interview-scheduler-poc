@@ -1,5 +1,6 @@
 package com.example.demo.domain;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -7,13 +8,14 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.Table;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.springframework.util.Assert;
@@ -38,12 +40,13 @@ public class Schedule {
     @Column
     private short lastHour;
 
-    @Column(nullable=false)
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(targetClass = DayOfWeek.class, fetch = FetchType.EAGER)
+    @CollectionTable(name = "WEEKDAYS", joinColumns = @JoinColumn(name = "id"))
+    @Column(name = "weekday")
     private Set<DayOfWeek> weekDays;
 
     public Schedule(LocalDate startDate, LocalDate lastDate, short startHour,
-                    short lastHour, Set<DayOfWeek> weekDays) {
+                    short lastHour, TreeSet<DayOfWeek> weekDays) {
         validate(startDate, lastDate, startHour, lastHour);
         this.startDate = startDate;
         this.lastDate = lastDate;
@@ -65,7 +68,7 @@ public class Schedule {
     public static Schedule intersection(Schedule schedule1, Schedule schedule2) {
         Set<DayOfWeek> weekDays1 = schedule1.getWeekDays();
         Set<DayOfWeek> weekDays2 = schedule2.getWeekDays();
-        Set<DayOfWeek> weekDays = new HashSet<>(weekDays1);
+        TreeSet<DayOfWeek> weekDays = new TreeSet<>(weekDays1);
         weekDays.retainAll(weekDays2);
 
         if (weekDays.isEmpty()) {
@@ -89,7 +92,7 @@ public class Schedule {
                         startDate.datesUntil(lastDate.plusDays(1))
                                 .anyMatch(d -> d.getDayOfWeek().equals(dayOfWeek))
                 )
-                .collect(Collectors.toSet());
+                .collect(Collectors.toCollection(TreeSet::new));
 
         if (weekDays.isEmpty()) {
             return null;
@@ -152,8 +155,8 @@ public class Schedule {
         this.lastHour = lastHour;
     }
 
-    public Set<DayOfWeek> getWeekDays() {
-        return weekDays;
+    public TreeSet<DayOfWeek> getWeekDays() {
+        return new TreeSet<>(weekDays);
     }
 
     public void setWeekDays(Set<DayOfWeek> weekDays) {

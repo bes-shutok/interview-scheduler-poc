@@ -3,9 +3,11 @@ package com.example.demo;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,7 +61,9 @@ public class ControllerTests {
     @Autowired
     private ScheduleRestController scheduleRestController;
 
-    private static final Set<DayOfWeek> WORK_DAYS = EnumSet.of(MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY);
+    private static final TreeSet<DayOfWeek> WORK_DAYS = new TreeSet<>(
+            EnumSet.of(MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY)
+    );
 
     @AfterEach
     @BeforeEach
@@ -69,14 +73,18 @@ public class ControllerTests {
 
     @Test
     void createInterviewersAndCandidate_ShouldAllowToArrangeInterviewSlots() {
-        LocalDate startDate = LocalDate.now().plusDays(2);
+        LocalDate startOfNextWeek = LocalDate.now();
+        do {
+            startOfNextWeek = startOfNextWeek.plusDays(1);
+        } while (!startOfNextWeek.getDayOfWeek().equals(MONDAY));
+
         User interviewerInes =
                 User.from(new CreateUserRequestDto("Ines", "test", UserType.INTERVIEWER));
         interviewerInes.setSchedules(
                 List.of(
                         new Schedule(
-                                startDate, startDate.plusDays(7),
-                                (short) 9, (short) 16,
+                                startOfNextWeek, startOfNextWeek.plusDays(6),
+                                (short) 9, (short) 15,
                                 WORK_DAYS
                         )
                 )
@@ -84,33 +92,33 @@ public class ControllerTests {
 
         User interviewerIngrid =
                 User.from(new CreateUserRequestDto("Ingrid", "test", UserType.INTERVIEWER));
+        List<Schedule> schedules = new java.util.ArrayList<>();
+        schedules.add(new Schedule(
+                startOfNextWeek, startOfNextWeek.plusDays(6),
+                (short) 12, (short) 17,
+                new TreeSet<>(Set.of(MONDAY, WEDNESDAY))
+        ));
+        schedules.add(new Schedule(
+                startOfNextWeek, startOfNextWeek.plusDays(6),
+                (short) 9, (short) 11,
+                new TreeSet<>(Set.of(TUESDAY, THURSDAY))
+        ));
         interviewerIngrid.setSchedules(
-                List.of(
-                        new Schedule(
-                                startDate, startDate.plusDays(7),
-                                (short) 12, (short) 18,
-                                Set.of(MONDAY, DayOfWeek.WEDNESDAY)
-                        ),
-                        new Schedule(
-                                startDate, startDate.plusDays(7),
-                                (short) 9, (short) 12,
-                                Set.of(DayOfWeek.TUESDAY, DayOfWeek.THURSDAY)
-                        )
-                )
+                schedules
         );
         User candidateCarl =
                 User.from(new CreateUserRequestDto("Carl", "test", UserType.CANDIDATE));
         candidateCarl.setSchedules(
                 List.of(
                         new Schedule(
-                                startDate, startDate.plusDays(7),
-                                (short) 9, (short) 10,
+                                startOfNextWeek, startOfNextWeek.plusDays(6),
+                                (short) 9, (short) 9,
                                 WORK_DAYS
                         ),
                         new Schedule(
-                                startDate, startDate.plusDays(7),
-                                (short) 10, (short) 12,
-                                Set.of(DayOfWeek.WEDNESDAY)
+                                startOfNextWeek, startOfNextWeek.plusDays(6),
+                                (short) 10, (short) 11,
+                                new TreeSet<>(Set.of(WEDNESDAY))
                         )
                 )
         );
@@ -121,6 +129,37 @@ public class ControllerTests {
 
         Map<Long, List<Schedule>> interviewSchedules = userRestController.lookupInterviewSlots(candidateCarl);
         assertFalse(interviewSchedules.isEmpty());
+        Map<Long, List<Schedule>> expected = new HashMap<>();
+        expected.put(
+                interviewerInes.getId(),
+                List.of(
+                        new Schedule(
+                                startOfNextWeek, startOfNextWeek.plusDays(6),
+                                (short) 9, (short) 9,
+                                WORK_DAYS
+                        ),
+                        new Schedule(
+                                startOfNextWeek, startOfNextWeek.plusDays(6),
+                                (short) 10, (short) 11,
+                                new TreeSet<>(Set.of(WEDNESDAY))
+                        )
+                )
+        );
+        expected.put(
+                interviewerIngrid.getId(),
+                List.of(
+                        new Schedule(
+                                startOfNextWeek, startOfNextWeek.plusDays(6),
+                                (short) 9, (short) 9,
+                                new TreeSet<>(Set.of(TUESDAY, THURSDAY))
+                        )
+                )
+        );
+        assertEquals(expected.size(), interviewSchedules.size());
+        for (long id : expected.keySet()) {
+            assertEquals(expected.get(id), interviewSchedules.get(id));
+        }
+
 
     }
     @Test
