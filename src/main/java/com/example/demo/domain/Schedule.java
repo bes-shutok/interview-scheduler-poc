@@ -9,9 +9,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.util.Assert;
 
@@ -57,6 +60,54 @@ public class Schedule {
     }
 
     public Schedule() {
+    }
+
+    public static Schedule intersection(Schedule schedule1, Schedule schedule2) {
+        Set<DayOfWeek> weekDays1 = schedule1.getWeekDays();
+        Set<DayOfWeek> weekDays2 = schedule2.getWeekDays();
+        Set<DayOfWeek> weekDays = new HashSet<>(weekDays1);
+        weekDays.retainAll(weekDays2);
+
+        if (weekDays.isEmpty()) {
+            return null;
+        }
+
+        LocalDate startDate1 = schedule1.getStartDate();
+        LocalDate startDate2 = schedule2.getStartDate();
+        LocalDate startDate = startDate1.isAfter(startDate2) ? startDate1 : startDate2;
+
+        LocalDate lastDate1 = schedule1.getLastDate();
+        LocalDate lastDate2 = schedule2.getLastDate();
+        LocalDate lastDate = lastDate1.isBefore(lastDate2) ? lastDate1 : lastDate2;
+
+        if (lastDate.isBefore(startDate)) {
+            return null;
+        }
+
+        weekDays = weekDays.stream()
+                .filter(dayOfWeek ->
+                        startDate.datesUntil(lastDate.plusDays(1))
+                                .anyMatch(d -> d.getDayOfWeek().equals(dayOfWeek))
+                )
+                .collect(Collectors.toSet());
+
+        if (weekDays.isEmpty()) {
+            return null;
+        }
+
+        short startHour1 = schedule1.getStartHour();
+        short startHour2 = schedule2.getStartHour();
+        short startHour = startHour1 > startHour2 ? startHour1 : startHour2;
+
+        short lastHour1 = schedule1.getLastHour();
+        short lastHour2 = schedule2.getLastHour();
+        short lastHour = lastHour1 < lastHour2 ? lastHour1 : lastHour2;
+
+        if (startHour > lastHour) {
+            return null;
+        }
+
+        return new Schedule(startDate, lastDate, startHour, lastHour, weekDays);
     }
 
     public Long getId() {

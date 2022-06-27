@@ -1,6 +1,8 @@
 package com.example.demo.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.domain.Schedule;
 import com.example.demo.domain.User;
+import com.example.demo.domain.UserType;
 import com.example.demo.repository.UserRepository;
 
 @RestController
@@ -49,5 +52,35 @@ public class UserRestController {
     @GetMapping("/")
     public List<User> findAllUsers() {
         return userRepository.findAll();
+    }
+
+    public Map<Long, List<Schedule>> lookupInterviewSlots(User candidateCarl) {
+
+        List<Schedule> candidateSchedules = userRepository
+                .findById(candidateCarl.getId())
+                .orElseThrow()
+                .getSchedules();
+
+        List<User> interviewerList = userRepository.findAll().stream()
+                .filter(u -> u.getUserType().equals(UserType.INTERVIEWER))
+                .toList();
+
+        Map<Long, List<Schedule>> interviewSlots = new HashMap<>();
+
+        for (User user : interviewerList) {
+            List<Schedule> intersections = user.getSchedules().stream()
+                    .flatMap(
+                            interviewerSchedule -> candidateSchedules.stream().
+                                    map(
+                                            candidateSchedule ->
+                                                    Schedule.intersection(candidateSchedule, interviewerSchedule)
+                                    )
+                    ).toList();
+            if (!intersections.isEmpty()) {
+                interviewSlots.put(user.getId(), intersections);
+            }
+        }
+
+        return interviewSlots;
     }
 }
