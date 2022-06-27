@@ -21,6 +21,7 @@ import com.example.demo.domain.Schedule;
 import com.example.demo.domain.User;
 import com.example.demo.domain.UserType;
 import com.example.demo.dto.CreateUserRequestDto;
+import com.example.demo.dto.TimeSlot;
 import com.example.demo.repository.UserRepository;
 
 import static java.time.DayOfWeek.*;
@@ -61,9 +62,7 @@ public class ControllerTests {
     @Autowired
     private ScheduleRestController scheduleRestController;
 
-    private static final TreeSet<DayOfWeek> WORK_DAYS = new TreeSet<>(
-            EnumSet.of(MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY)
-    );
+    private static final Set<DayOfWeek> WORK_DAYS = EnumSet.of(MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY);
 
     @AfterEach
     @BeforeEach
@@ -127,18 +126,18 @@ public class ControllerTests {
         interviewerIngrid = userRestController.saveUser(interviewerIngrid);
         candidateCarl = userRestController.saveUser(candidateCarl);
 
-        Map<Long, List<Schedule>> interviewSchedules = userRestController.lookupInterviewSlots(candidateCarl);
+        Map<Long, List<TimeSlot>> interviewSchedules = userRestController.lookupInterviewSlots(candidateCarl.getId());
         assertFalse(interviewSchedules.isEmpty());
-        Map<Long, List<Schedule>> expected = new HashMap<>();
+        Map<Long, List<TimeSlot>> expected = new HashMap<>();
         expected.put(
                 interviewerInes.getId(),
                 List.of(
-                        new Schedule(
+                        new TimeSlot(
                                 startOfNextWeek, startOfNextWeek.plusDays(6),
                                 (short) 9, (short) 9,
-                                WORK_DAYS
+                                new TreeSet<>(WORK_DAYS)
                         ),
-                        new Schedule(
+                        new TimeSlot(
                                 startOfNextWeek, startOfNextWeek.plusDays(6),
                                 (short) 10, (short) 11,
                                 new TreeSet<>(Set.of(WEDNESDAY))
@@ -148,20 +147,16 @@ public class ControllerTests {
         expected.put(
                 interviewerIngrid.getId(),
                 List.of(
-                        new Schedule(
+                        new TimeSlot(
                                 startOfNextWeek, startOfNextWeek.plusDays(6),
                                 (short) 9, (short) 9,
                                 new TreeSet<>(Set.of(TUESDAY, THURSDAY))
                         )
                 )
         );
-        assertEquals(expected.size(), interviewSchedules.size());
-        for (long id : expected.keySet()) {
-            assertEquals(expected.get(id), interviewSchedules.get(id));
-        }
-
-
+        assertEquals(expected, interviewSchedules);
     }
+
     @Test
     void createSchedule_ShouldBeTheSameAsPersisted() {
         User user = User.from(new CreateUserRequestDto("test", "test", UserType.ADMIN));

@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.util.Assert;
 
+import com.example.demo.dto.TimeSlot;
+
 @SuppressWarnings("JpaDataSourceORMInspection")
 @Entity
 @Table(name="schedules", schema="public")
@@ -46,7 +48,7 @@ public class Schedule {
     private Set<DayOfWeek> weekDays;
 
     public Schedule(LocalDate startDate, LocalDate lastDate, short startHour,
-                    short lastHour, TreeSet<DayOfWeek> weekDays) {
+                    short lastHour, Set<DayOfWeek> weekDays) {
         validate(startDate, lastDate, startHour, lastHour);
         this.startDate = startDate;
         this.lastDate = lastDate;
@@ -65,7 +67,7 @@ public class Schedule {
     public Schedule() {
     }
 
-    public static Schedule intersection(Schedule schedule1, Schedule schedule2) {
+    public static TimeSlot intersection(Schedule schedule1, Schedule schedule2) {
         Set<DayOfWeek> weekDays1 = schedule1.getWeekDays();
         Set<DayOfWeek> weekDays2 = schedule2.getWeekDays();
         TreeSet<DayOfWeek> weekDays = new TreeSet<>(weekDays1);
@@ -110,7 +112,7 @@ public class Schedule {
             return null;
         }
 
-        return new Schedule(startDate, lastDate, startHour, lastHour, weekDays);
+        return new TimeSlot(startDate, lastDate, startHour, lastHour, weekDays);
     }
 
     public Long getId() {
@@ -155,8 +157,8 @@ public class Schedule {
         this.lastHour = lastHour;
     }
 
-    public TreeSet<DayOfWeek> getWeekDays() {
-        return new TreeSet<>(weekDays);
+    public Set<DayOfWeek> getWeekDays() {
+        return weekDays;
     }
 
     public void setWeekDays(Set<DayOfWeek> weekDays) {

@@ -17,16 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.domain.Schedule;
 import com.example.demo.domain.User;
 import com.example.demo.domain.UserType;
-import com.example.demo.repository.ScheduleRepository;
+import com.example.demo.dto.TimeSlot;
 import com.example.demo.repository.UserRepository;
 
 @RestController
 @RequestMapping(UserRestController.PATH)
 public class UserRestController {
     public static final String PATH = "/api/users";
-
-    @Autowired
-    private ScheduleRepository scheduleRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -59,10 +56,11 @@ public class UserRestController {
         return userRepository.findAll();
     }
 
-    public Map<Long, List<Schedule>> lookupInterviewSlots(User candidateCarl) {
+    @GetMapping("/candidates/{id}/time_slots")
+    public Map<Long, List<TimeSlot>> lookupInterviewSlots(@PathVariable Long id) {
 
         List<Schedule> candidateSchedules = userRepository
-                .findByIdEquals(candidateCarl.getId())
+                .findByIdEquals(id)
                 .orElseThrow()
                 .getSchedules();
 
@@ -70,10 +68,10 @@ public class UserRestController {
                 .filter(u -> u.getUserType().equals(UserType.INTERVIEWER))
                 .toList();
 
-        Map<Long, List<Schedule>> interviewSlots = new HashMap<>();
+        Map<Long, List<TimeSlot>> interviewSlots = new HashMap<>();
 
         for (User user : interviewerList) {
-            List<Schedule> intersections = user.getSchedules().stream()
+            List<TimeSlot> intersections = user.getSchedules().stream()
                     .flatMap(
                             interviewerSchedule -> candidateSchedules.stream().
                                     map(
