@@ -4,27 +4,29 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import com.example.demo.controller.ScheduleRestController;
 import com.example.demo.controller.UserRestController;
 import com.example.demo.domain.DayOfWeek;
 import com.example.demo.domain.Schedule;
 import com.example.demo.domain.User;
 import com.example.demo.domain.UserType;
 import com.example.demo.dto.CreateUserRequestDto;
-import com.example.demo.repository.ScheduleRepository;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 
 @SpringBootTest
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ControllerTests {
 
     @Autowired
     private UserRestController userRestController;
     @Autowired
-    private ScheduleRepository scheduleRepository;
+    private ScheduleRestController scheduleRestController;
 
     @Test
     void testSchedule() {
@@ -37,9 +39,8 @@ public class ControllerTests {
                         (short) 10, (short) 15,
                         DayOfWeek.WORK_DAYS
                 );
-        user.setSchedules(List.of(schedule));
-        user = userRestController.saveUser(user);
-        List<Schedule> schedules = scheduleRepository.findAll();
+        user = userRestController.addSchedules(user.getId(), List.of(schedule));
+        List<Schedule> schedules = scheduleRestController.findAllSchedules();
         assertFalse(schedules.isEmpty());
         assertEquals(1, schedules.size());
         assertEquals(1, user.getSchedules().size());
