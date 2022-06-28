@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 /**
  * This is a demo (POC) project to implement below requirements.
  * See test for the proposed pipeline in
- * {@link ControllerTests#createInterviewersAndCandidate_ShouldAllowToArrangeInterviewSlots()}  }
+ * {@link ControllerTests#createInterviewersAndCandidateThenAddSchedule_ShouldProvideInterviewSlots()}  }
  *
  * Assignment
  * For this assignment, please use the tech stack you feel most comfortable with.

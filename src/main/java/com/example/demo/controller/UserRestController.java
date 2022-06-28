@@ -56,7 +56,9 @@ public class UserRestController {
         return userRepository.findAll();
     }
 
-    @GetMapping("/candidates/{id}/time_slots")
+    /*Returns a map of objects where key is the id of the Interviewer and value - intersection of timeslots
+    * of this interviewer and the candidate*/
+    @GetMapping("/candidates/{id}/interview_slots")
     public Map<Long, List<TimeSlot>> lookupInterviewSlots(@PathVariable Long id) {
 
         List<Schedule> candidateSchedules = userRepository

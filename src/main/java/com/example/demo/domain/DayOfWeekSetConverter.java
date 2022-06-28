@@ -7,7 +7,6 @@ import java.time.DayOfWeek;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 @Converter
@@ -18,7 +17,8 @@ public class DayOfWeekSetConverter implements AttributeConverter<Set<DayOfWeek>,
     public String convertToDatabaseColumn(Set<DayOfWeek> weekDays) {
         return weekDays != null ?
                 weekDays.stream()
-                        .map(DayOfWeek::toString)
+                        .map(DayOfWeek::getValue)
+                        .map(i -> Integer.toString(i))
                         .collect(Collectors.joining(SPLIT_CHAR))
                 : "";
     }
@@ -27,8 +27,9 @@ public class DayOfWeekSetConverter implements AttributeConverter<Set<DayOfWeek>,
     public Set<DayOfWeek> convertToEntityAttribute(String string) {
         return string != null ?
                 Arrays.stream(string.split(SPLIT_CHAR))
-                        .map(DayOfWeek::valueOf)
-                        .collect(Collectors.toCollection(TreeSet::new))
+                        .map(Integer::valueOf)
+                        .map(DayOfWeek::of)
+                        .collect(Collectors.toSet())
                 : new HashSet<>();
     }
 }
