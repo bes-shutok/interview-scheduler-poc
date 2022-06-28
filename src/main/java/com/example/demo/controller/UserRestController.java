@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -61,19 +62,21 @@ public class UserRestController {
     @GetMapping("/candidates/{id}/interview_slots")
     public Map<Long, List<TimeSlot>> lookupInterviewSlots(@PathVariable Long id) {
 
-        List<Schedule> candidateSchedules = userRepository
+        User candidate = userRepository
                 .findByIdEquals(id)
-                .orElseThrow()
-                .getSchedules();
+                .orElseThrow();
+        Assert.isTrue(candidate.getUserType().equals(UserType.CANDIDATE), "Found user is not a CANDIDATE!");
 
-        List<User> interviewerList = userRepository.findAll().stream()
+        List<Schedule> candidateSchedules = candidate.getSchedules();
+
+        List<User> interviewers = userRepository.findAll().stream()
                 .filter(u -> u.getUserType().equals(UserType.INTERVIEWER))
                 .toList();
 
         Map<Long, List<TimeSlot>> interviewSlots = new HashMap<>();
 
-        for (User user : interviewerList) {
-            List<TimeSlot> intersections = user.getSchedules().stream()
+        for (User interviewer : interviewers) {
+            List<TimeSlot> intersections = interviewer.getSchedules().stream()
                     .flatMap(
                             interviewerSchedule -> candidateSchedules.stream().
                                     map(
@@ -84,7 +87,7 @@ public class UserRestController {
                     .filter(Objects::nonNull)
                     .toList();
             if (!intersections.isEmpty()) {
-                interviewSlots.put(user.getId(), intersections);
+                interviewSlots.put(interviewer.getId(), intersections);
             }
         }
 

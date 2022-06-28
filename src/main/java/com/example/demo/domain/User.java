@@ -16,9 +16,6 @@ import javax.persistence.Table;
 import java.util.List;
 import java.util.Objects;
 
-import com.example.demo.dto.CreateUserRequestDto;
-
-@SuppressWarnings("JpaDataSourceORMInspection")
 @Entity
 @Table(name="users", schema="public")
 public class User {
@@ -47,10 +44,6 @@ public class User {
     }
 
     public User() {
-    }
-
-    public static User from(CreateUserRequestDto userRequestDto) {
-        return new User(userRequestDto.username(), userRequestDto.password(), userRequestDto.userType());
     }
 
     public Long getId() {

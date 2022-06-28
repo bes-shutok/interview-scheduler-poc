@@ -15,7 +15,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import com.example.demo.domain.Schedule;
 import com.example.demo.domain.User;
 import com.example.demo.domain.UserType;
-import com.example.demo.dto.CreateUserRequestDto;
 import com.example.demo.repository.ScheduleRepository;
 import com.example.demo.repository.UserRepository;
 
@@ -34,12 +33,12 @@ class RepositoryTests {
             EnumSet.of(MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY)
     );
 
-    private User user;
+    private User user = new User("test", "test", UserType.ADMIN);
 
     @BeforeEach
     void setup() {
-        CreateUserRequestDto userRequestDto = new CreateUserRequestDto("test", "test", UserType.ADMIN);
-        user = User.from(userRequestDto);
+        userRepository.deleteAll();
+        scheduleRepository.deleteAll();
         user = userRepository.save(user);
     }
     @AfterEach

@@ -20,8 +20,8 @@ import com.example.demo.controller.UserRestController;
 import com.example.demo.domain.Schedule;
 import com.example.demo.domain.User;
 import com.example.demo.domain.UserType;
-import com.example.demo.dto.CreateUserRequestDto;
 import com.example.demo.dto.TimeSlot;
+import com.example.demo.repository.ScheduleRepository;
 import com.example.demo.repository.UserRepository;
 
 import static java.time.DayOfWeek.*;
@@ -57,6 +57,8 @@ public class ControllerTests {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private ScheduleRepository scheduleRepository;
     @Autowired
     private UserRestController userRestController;
     @Autowired
@@ -104,22 +106,27 @@ public class ControllerTests {
             )
     );
 
+    // Below fields are created independently for each test since all tests are instantiated separately (by default)
+    private User interviewerInes = new User("Ines", "test", UserType.INTERVIEWER);
+
+    private User interviewerIngrid = new User("Ingrid", "test", UserType.INTERVIEWER);
+
+    private User candidateCarl = new User("Carl", "test", UserType.CANDIDATE);
+
     @AfterEach
     @BeforeEach
     void cleanup() {
         userRepository.deleteAll();
+        scheduleRepository.deleteAll();
     }
 
     @Test
     void createInterviewersAndCandidateWithSchedule_ShouldProvideInterviewSlots() {
 
-        User interviewerInes = User.from(new CreateUserRequestDto("Ines", "test", UserType.INTERVIEWER));
         interviewerInes.setSchedules(INES_SCHEDULES);
 
-        User interviewerIngrid = User.from(new CreateUserRequestDto("Ingrid", "test", UserType.INTERVIEWER));
         interviewerIngrid.setSchedules(INGRID_SCHEDULES);
 
-        User candidateCarl = User.from(new CreateUserRequestDto("Carl", "test", UserType.CANDIDATE));
         candidateCarl.setSchedules(CARL_SCHEDULES);
 
         interviewerInes = userRestController.saveUser(interviewerInes);
@@ -132,15 +139,12 @@ public class ControllerTests {
     @Test
     void createInterviewersAndCandidateThenAddSchedule_ShouldProvideInterviewSlots() {
 
-        User interviewerInes = User.from(new CreateUserRequestDto("Ines", "test", UserType.INTERVIEWER));
         interviewerInes = userRestController.saveUser(interviewerInes);
         interviewerInes = userRestController.addSchedules(interviewerInes.getId(), INES_SCHEDULES);
 
-        User interviewerIngrid = User.from(new CreateUserRequestDto("Ingrid", "test", UserType.INTERVIEWER));
         interviewerIngrid = userRestController.saveUser(interviewerIngrid);
         interviewerIngrid = userRestController.addSchedules(interviewerIngrid.getId(), INGRID_SCHEDULES);
 
-        User candidateCarl = User.from(new CreateUserRequestDto("Carl", "test", UserType.CANDIDATE));
         candidateCarl = userRestController.saveUser(candidateCarl);
         candidateCarl = userRestController.addSchedules(candidateCarl.getId(), CARL_SCHEDULES);
 
@@ -181,7 +185,7 @@ public class ControllerTests {
 
     @Test
     void createSchedule_ShouldBeTheSameAsPersisted() {
-        User user = User.from(new CreateUserRequestDto("test", "test", UserType.ADMIN));
+        User user = new User("test", "test", UserType.ADMIN);
         user = userRestController.saveUser(user);
         Schedule schedule =
                 new Schedule(
