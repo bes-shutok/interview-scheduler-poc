@@ -1,14 +1,11 @@
 package com.example.demo.domain;
 
-import javax.persistence.CollectionTable;
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.Table;
 
 import java.time.DayOfWeek;
@@ -22,7 +19,6 @@ import org.springframework.util.Assert;
 
 import com.example.demo.dto.TimeSlot;
 
-@SuppressWarnings("JpaDataSourceORMInspection")
 @Entity
 @Table(name="schedules", schema="public")
 public class Schedule {
@@ -42,9 +38,7 @@ public class Schedule {
     @Column
     private short lastHour;
 
-    @ElementCollection(targetClass = DayOfWeek.class, fetch = FetchType.EAGER)
-    @CollectionTable(name = "WEEKDAYS", joinColumns = @JoinColumn(name = "id"))
-    @Column(name = "weekday")
+    @Convert(converter = DayOfWeekSetConverter.class)
     private Set<DayOfWeek> weekDays;
 
     public Schedule(LocalDate startDate, LocalDate lastDate, short startHour,
