@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
-	<artifactId>demo</artifactId>
+	<artifactId>interview-scheduler-poc</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>demo</name>
-	<description>demo</description>
+	<description>Interview scheduler POC</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>
