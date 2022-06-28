@@ -1,6 +1,6 @@
-This is a Spring Boot project to POC below pipeline.
+This is a Spring Boot project to POC for the below pipeline.
 The project uses:
-- Spring Data JPA to communicate with d2 "test" database (persisted in user's folder)
+- Spring Data JPA to communicate with H2 "test" database (persisted in user's folder)
 - Spring MVC for the REST API.
 
 
