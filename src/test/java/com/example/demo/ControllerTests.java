@@ -1,20 +1,5 @@
 package com.example.demo;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-
 import com.example.demo.controller.ScheduleRestController;
 import com.example.demo.controller.UserRestController;
 import com.example.demo.domain.Schedule;
@@ -23,9 +8,19 @@ import com.example.demo.domain.UserType;
 import com.example.demo.dto.TimeSlot;
 import com.example.demo.repository.ScheduleRepository;
 import com.example.demo.repository.UserRepository;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.util.*;
 
 import static java.time.DayOfWeek.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 
 /**
@@ -74,60 +69,32 @@ public class ControllerTests {
         START_OF_NEXT_WEEK = date;
     }
 
-    private static final List<Schedule> INES_SCHEDULES = List.of(
-            new Schedule(
-                    START_OF_NEXT_WEEK, START_OF_NEXT_WEEK.plusDays(6),
-                    (short) 9, (short) 15,
-                    WORK_DAYS
-            )
-    );
-    private static final List<Schedule> INGRID_SCHEDULES = List.of(
-            new Schedule(
-                    START_OF_NEXT_WEEK, START_OF_NEXT_WEEK.plusDays(6),
-                    (short) 12, (short) 17,
-                    new TreeSet<>(Set.of(MONDAY, WEDNESDAY))
-            ),
-            new Schedule(
-                    START_OF_NEXT_WEEK, START_OF_NEXT_WEEK.plusDays(6),
-                    (short) 9, (short) 11,
-                    new TreeSet<>(Set.of(TUESDAY, THURSDAY))
-            )
-    );
-    private static final List<Schedule> CARL_SCHEDULES = List.of(
-            new Schedule(
-                    START_OF_NEXT_WEEK, START_OF_NEXT_WEEK.plusDays(6),
-                    (short) 9, (short) 9,
-                    WORK_DAYS
-            ),
-            new Schedule(
-                    START_OF_NEXT_WEEK, START_OF_NEXT_WEEK.plusDays(6),
-                    (short) 10, (short) 11,
-                    new TreeSet<>(Set.of(WEDNESDAY))
-            )
-    );
-
-    // Below fields are created independently for each test since all tests are instantiated separately (by default)
-    private User interviewerInes = new User("Ines", "test", UserType.INTERVIEWER);
-
-    private User interviewerIngrid = new User("Ingrid", "test", UserType.INTERVIEWER);
-
-    private User candidateCarl = new User("Carl", "test", UserType.CANDIDATE);
+    private List<Schedule> inesSchedules;
+    private List<Schedule> ingridSchedules;
+    private List<Schedule> carlSchedules;
+    private User interviewerInes;
+    private User interviewerIngrid;
+    private User candidateCarl;
 
     @AfterEach
     @BeforeEach
     void cleanup() {
         userRepository.deleteAll();
         scheduleRepository.deleteAll();
+        interviewerInes = new User("Ines", "test", UserType.INTERVIEWER);
+        interviewerIngrid = new User("Ingrid", "test", UserType.INTERVIEWER);
+        candidateCarl = new User("Carl", "test", UserType.CANDIDATE);
     }
 
     @Test
     void createInterviewersAndCandidateWithSchedule_ShouldProvideInterviewSlots() {
+        setUpSchedules();
 
-        interviewerInes.setSchedules(INES_SCHEDULES);
+        interviewerInes.setSchedules(inesSchedules);
 
-        interviewerIngrid.setSchedules(INGRID_SCHEDULES);
+        interviewerIngrid.setSchedules(ingridSchedules);
 
-        candidateCarl.setSchedules(CARL_SCHEDULES);
+        candidateCarl.setSchedules(carlSchedules);
 
         interviewerInes = userRestController.saveUser(interviewerInes);
         interviewerIngrid = userRestController.saveUser(interviewerIngrid);
@@ -138,15 +105,16 @@ public class ControllerTests {
 
     @Test
     void createInterviewersAndCandidateThenAddSchedule_ShouldProvideInterviewSlots() {
+        setUpSchedules();
 
         interviewerInes = userRestController.saveUser(interviewerInes);
-        interviewerInes = userRestController.addSchedules(interviewerInes.getId(), INES_SCHEDULES);
+        interviewerInes = userRestController.addSchedules(interviewerInes.getId(), inesSchedules);
 
         interviewerIngrid = userRestController.saveUser(interviewerIngrid);
-        interviewerIngrid = userRestController.addSchedules(interviewerIngrid.getId(), INGRID_SCHEDULES);
+        interviewerIngrid = userRestController.addSchedules(interviewerIngrid.getId(), ingridSchedules);
 
         candidateCarl = userRestController.saveUser(candidateCarl);
-        candidateCarl = userRestController.addSchedules(candidateCarl.getId(), CARL_SCHEDULES);
+        candidateCarl = userRestController.addSchedules(candidateCarl.getId(), carlSchedules);
 
         validateInterviewTimeSlots(interviewerInes, interviewerIngrid, candidateCarl);
     }
@@ -199,5 +167,39 @@ public class ControllerTests {
         assertEquals(1, schedules.size());
         assertEquals(1, user.getSchedules().size());
         assertEquals(user.getSchedules().get(0), schedules.get(0));
+    }
+
+    private void setUpSchedules() {
+        carlSchedules = List.of(
+                new Schedule(
+                        START_OF_NEXT_WEEK, START_OF_NEXT_WEEK.plusDays(6),
+                        (short) 9, (short) 9,
+                        WORK_DAYS
+                ),
+                new Schedule(
+                        START_OF_NEXT_WEEK, START_OF_NEXT_WEEK.plusDays(6),
+                        (short) 10, (short) 11,
+                        new TreeSet<>(Set.of(WEDNESDAY))
+                )
+        );
+        ingridSchedules = List.of(
+                new Schedule(
+                        START_OF_NEXT_WEEK, START_OF_NEXT_WEEK.plusDays(6),
+                        (short) 12, (short) 17,
+                        new TreeSet<>(Set.of(MONDAY, WEDNESDAY))
+                ),
+                new Schedule(
+                        START_OF_NEXT_WEEK, START_OF_NEXT_WEEK.plusDays(6),
+                        (short) 9, (short) 11,
+                        new TreeSet<>(Set.of(TUESDAY, THURSDAY))
+                )
+        );
+        inesSchedules = List.of(
+                new Schedule(
+                        START_OF_NEXT_WEEK, START_OF_NEXT_WEEK.plusDays(6),
+                        (short) 9, (short) 15,
+                        WORK_DAYS
+                )
+        );
     }
 }

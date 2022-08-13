@@ -1,28 +1,23 @@
 package com.example.demo.controller;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.example.demo.domain.Schedule;
 import com.example.demo.domain.User;
 import com.example.demo.domain.UserType;
 import com.example.demo.dto.TimeSlot;
 import com.example.demo.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping(UserRestController.PATH)
+@Transactional
 public class UserRestController {
     public static final String PATH = "/api/users";
 
@@ -44,7 +39,7 @@ public class UserRestController {
         );
         User user = userRepository.findById(id).orElseThrow();
         user.setSchedules(schedules);
-        return userRepository.save(user);
+        return user;
     }
 
     @DeleteMapping("/{id}")
